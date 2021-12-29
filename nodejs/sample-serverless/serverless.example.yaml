@@ -13,7 +13,7 @@ provider:
   lambdaHashingVersion: 20201221
   runtime: nodejs14.x
   tracing:
-    lambda: Active
+    lambda: PassThrough
   memorySize: 384
   timeout: 20
   iamRoleStatements:
@@ -28,19 +28,12 @@ provider:
 
   environment:
     # Open Telemetry
-    # AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
-    # OTEL_LOG_LEVEL: debug
-    # OTEL_TRACES_EXPORTER: logging # otlp
-    # OTEL_METRICS_EXPORTER: logging # otlp
-    # OTEL_PROPAGATORS: tracecontext
-    # OTEL_TRACES_SAMPLER: always_on
-    # OTEL_EXPORTER_OTLP_ENDPOINT: https://stackstate.trace-agent.ngrok.io/open-telemetry
-    # OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: https://stackstate.trace-agent.ngrok.io/open-telemetry
-
     AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
-    OTEL_TRACES_EXPORTER: logging
-    OTEL_METRICS_EXPORTER: logging
-    OTEL_LOG_LEVEL: DEBUG
+    OTEL_LOG_LEVEL: info
+    OTEL_TRACES_EXPORTER: otlp
+    OTEL_PROPAGATORS: tracecontext
+    OTEL_TRACES_SAMPLER: always_on
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: https://stackstate.trace-agent.ngrok.io/open-telemetry
 
     # Standard
     AWS_REGION_DEPLOYED: ${self:provider.region}
@@ -78,7 +71,9 @@ functions:
   ExampleOpenTelemetry:
     handler: example.main
     layers:
-      - !ImportValue sls-otel-collector-dev-OpenTelemetryCollectorLambdaLayerQualifiedArn
+      # Local Layer is broken rather use open telemetry distro layer
+      # - !ImportValue sls-otel-collector-dev-OpenTelemetryCollectorLambdaLayerQualifiedArn
+      - "arn:aws:lambda:eu-west-1:901920570463:layer:aws-otel-nodejs-ver-1-0-0:1"
       - !ImportValue sls-otel-nodejs-dev-OpenTelemetryNodeJSLambdaLayerQualifiedArn
 
   ExampleReceiverOpenTelemetry:

@@ -65,7 +65,7 @@ declare global {
   ): SDKRegistrationConfig;
 }
 
-console.log('Registering OpenTelemetry');
+console.log('Registering OpenTelemetry - Custom STS');
 
 const instrumentations = [
   new AwsInstrumentation({

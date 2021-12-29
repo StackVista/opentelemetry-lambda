@@ -113,15 +113,6 @@ const stepFunctionOpenTelemetryExample = () => {
 
 
 module.exports.main = (event, context, callback) => {
-  callback(null, {
-    statusCode: 200,
-    body: JSON.stringify({
-      status: 'success',
-      parts: "" // body
-    })
-  })
-
-  /*
   Promise.all([
     sqsOpenTelemetryExample(),
     snsOpenTelemetryExample(),
@@ -145,7 +136,6 @@ module.exports.main = (event, context, callback) => {
       })
     })
   })
-   */
 };
 
 

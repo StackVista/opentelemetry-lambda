@@ -7,6 +7,9 @@ export const genericService: MODULE = (
   action,
   inputs
 ) => {
-  console.log(`Mapping generic information for the '${service}' service`);
+  console.log(
+    `[STS] GENERIC - Mapping information for the '${service}' service`
+  );
+
   addGenericAwsRequestAttributes(span, action, inputs);
 };

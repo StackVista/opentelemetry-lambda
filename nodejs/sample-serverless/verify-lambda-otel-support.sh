@@ -21,17 +21,17 @@ fi
 
 
 # Determine and set a AWS_PROFILE for the cli command
-read -p "Enter your 'AWS_PROFILE', leave blank to use your default 'AWS_PROFILE' [${AWS_PROFILE-none}]: " AWS_PROFILE_INPUT
+read -p "Enter your 'AWS_PROFILE', leave blank to use your default '${AWS_PROFILE-none}': " AWS_PROFILE_INPUT
 if [ -n "$AWS_PROFILE_INPUT" ]
   then
     AWS_PROFILE=$AWS_PROFILE_INPUT
 fi
 
-read -p 'What is the Lambda Layer name you gave for the collector layer (default: OpenTelemetryCollector): ' COLLECTOR_LAMBDA_LAYER_NAME
-COLLECTOR_LAMBDA_LAYER_NAME=${COLLECTOR_LAMBDA_LAYER_NAME:-OpenTelemetryCollector}
-
-read -p 'What is the Lambda Layer name you gave for the nodejs layer (default: OpenTelemetryNodeJS): ' NODEJS_LAMBDA_LAYER_NAME
+read -p 'Nodejs layer name (default: OpenTelemetryNodeJS): ' NODEJS_LAMBDA_LAYER_NAME
 NODEJS_LAMBDA_LAYER_NAME=${NODEJS_LAMBDA_LAYER_NAME:-OpenTelemetryNodeJS}
+
+read -p 'Collector layer name, Only change this if you changed the distro layer target, Recommended to leave as is (default: aws-otel-nodejs-ver): ' COLLECTOR_LAMBDA_LAYER_NAME
+COLLECTOR_LAMBDA_LAYER_NAME=${COLLECTOR_LAMBDA_LAYER_NAME:-aws-otel-nodejs-ver}
 
 echo ""
 echo "** Running unit tests for the Lambda function '$FUNCTION_NAME' **"
@@ -45,13 +45,16 @@ then
     --region "$REGION" \
     --function-name "$FUNCTION_NAME" \
     --profile "$AWS_PROFILE" \
-    --query 'TracingConfig.Mode')
+    --query 'TracingConfig.Mode' \
+    --output text)
 else
   TRACING_CONFIG_MODE=$(aws lambda get-function-configuration \
     --region "$REGION" \
     --function-name "$FUNCTION_NAME" \
-    --query 'TracingConfig.Mode')
+    --query 'TracingConfig.Mode' \
+    --output text)
 fi
+
 
 if [[ "$TRACING_CONFIG_MODE" != "PassThrough" && "$TRACING_CONFIG_MODE" != "Active" ]]; then
   echo "❌ - Tracing config '$TRACING_CONFIG_MODE' is invalid, The tracing config for this function is incorrect. It needs to be either 'PassThrough' or 'Active' for Open Telemetry to work (Please note that 'PassThrough' is recommended as 'Active' costs $)"
@@ -68,12 +71,14 @@ function missing_env_variable_test {
       --region "$REGION" \
       --function-name "$FUNCTION_NAME" \
       --profile "$AWS_PROFILE" \
-      --query "Environment.Variables.$1")
+      --query "Environment.Variables.$1" \
+      --output text)
   else
     LAMBDA_ENV_VARIABLE=$(aws lambda get-function-configuration \
       --region "$REGION" \
       --function-name "$FUNCTION_NAME" \
-      --query "Environment.Variables.$1")
+      --query "Environment.Variables.$1" \
+      --output text)
   fi
 
   if [[ -z $2 && $LAMBDA_ENV_VARIABLE == "None" ]]; then
@@ -113,7 +118,7 @@ fi
 if [[ "$LAYERS" == *"layer:$COLLECTOR_LAMBDA_LAYER_NAME"* ]]; then
   echo "✅ - Collector Lambda Layer Found"
 else
-  echo "❌ - Collector Lambda Layer Not Found, Looked for the layer name '$COLLECTOR_LAMBDA_LAYER_NAME'. Please add this Lambda Layer to your Lambda Function"
+  echo "❌ - Collector Lambda Layer Not Found, Looked for the layer name '$COLLECTOR_LAMBDA_LAYER_NAME'. Supported layers can be found at https://aws-otel.github.io/docs/getting-started/lambda/lambda-js"
 fi
 
 if [[ "$LAYERS" == *"layer:$NODEJS_LAMBDA_LAYER_NAME"* ]]; then
