@@ -1,3 +1,8 @@
+provider "aws" {
+  region  = "eu-west-1"
+  profile = "otel-nodejs-example-dev"
+}
+
 resource "aws_lambda_layer_version" "sdk_layer" {
   layer_name          = var.sdk_layer_name
   filename            = "${path.module}/../../../packages/layer/build/layer.zip"

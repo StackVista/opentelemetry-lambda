@@ -6,6 +6,7 @@
   "repository": "open-telemetry/opentelemetry-lambda",
   "scripts": {
     "clean": "rimraf build/*",
+    "test": "",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "prepare": "npm run compile",

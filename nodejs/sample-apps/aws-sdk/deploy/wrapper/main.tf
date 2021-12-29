@@ -1,3 +1,9 @@
+provider "aws" {
+  region  = "eu-west-1"
+  profile = "otel-nodejs-example-dev"
+}
+
+
 module "hello-lambda-function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = ">= 2.24.0"
