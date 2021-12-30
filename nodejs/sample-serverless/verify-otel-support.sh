@@ -1,10 +1,19 @@
-# In what region is the function runnning
-read -p 'What region is your function running in (default: eu-west-1): ' REGION
+clear
+echo "===== This script will validate if your Lambda Function has the correct settings to potentially work with Open Telemetry ====="
+echo "===== This will be done by asking you to input identifiers pointing to the function ====="
+echo "===== and those will be used to pull Lambda Layers and Env Variables to validate the function =====\n\n"
+
+
+# In what region is the function running
+echo "What AWS Region is your lambda function running in ? [default: eu-west-1]"
+echo "Press Enter to proceed with the default"
+read -p ':' REGION
 REGION=${REGION:-eu-west-1}
+echo "Using region '$REGION'\n"
 
 # Determine the function name
 functionName () {
-  read -p 'What is your function name: ' FUNCTION_NAME
+  read -p 'What is your Lambda Function Name: ' FUNCTION_NAME
   if [ -z "$FUNCTION_NAME" ]
   then
     # Function name should not be empty
@@ -19,18 +28,23 @@ else
   functionName
 fi
 
+echo "Using function name '$FUNCTION_NAME'\n"
+
 
 # Determine and set a AWS_PROFILE for the cli command
-read -p "Enter your 'AWS_PROFILE', leave blank to use your default '${AWS_PROFILE-none}': " AWS_PROFILE_INPUT
+echo "Enter your 'AWS_PROFILE' to use with the AWS CLI calls? [default: ${AWS_PROFILE-None}]"
+echo "Press Enter to either use the default or your local env"
+
+read -p ":" AWS_PROFILE_INPUT
 if [ -n "$AWS_PROFILE_INPUT" ]
   then
     AWS_PROFILE=$AWS_PROFILE_INPUT
 fi
+echo ""
 
-read -p 'Nodejs layer name (default: OpenTelemetryNodeJS): ' NODEJS_LAMBDA_LAYER_NAME
+read -p 'Enter the NODEJS Lambda layer name (default: OpenTelemetryNodeJS): ' NODEJS_LAMBDA_LAYER_NAME
 NODEJS_LAMBDA_LAYER_NAME=${NODEJS_LAMBDA_LAYER_NAME:-OpenTelemetryNodeJS}
 
-read -p 'Collector layer name, Only change this if you changed the distro layer target, Recommended to leave as is (default: aws-otel-nodejs-ver): ' COLLECTOR_LAMBDA_LAYER_NAME
 COLLECTOR_LAMBDA_LAYER_NAME=${COLLECTOR_LAMBDA_LAYER_NAME:-aws-otel-nodejs-ver}
 
 echo ""
