@@ -101,7 +101,7 @@ run the `Serverless script`, Which should automatically deploy the layer for you
     ```
     serverless plugin install -n serverless-step-functions
     ```
-  - Run the following to deploy the serverless template:
+  - Run the following to deploy the serverless template [Change the URL to the location where the StackState Trace Agent is running]:
     ```
     OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=https://stackstate.trace-agent.ngrok.io \
     npx sls deploy
@@ -190,3 +190,5 @@ To remove this Docker image run the following command:
 ```
 docker rmi stackstate/stackstate-agent-2-test:STAC-0-Open-telemetry-support --force
 ```
+
+## ***You can now run the ExampleOpenTelemetry Lambda or Lambda function you added OTEL support for***

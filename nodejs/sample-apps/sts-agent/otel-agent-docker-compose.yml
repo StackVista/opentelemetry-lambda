@@ -8,7 +8,12 @@ services:
     ports:
       - "8126:8126"
     volumes:
-      - aws_topology.yaml:/etc/stackstate-agent/conf.d/aws_topology.d/conf.yaml
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/proc/:/host/proc/:ro"
+      - "/sys/fs/cgroup/:/host/sys/fs/cgroup:ro"
+      - "/etc/passwd:/etc/passwd:ro"
+      - "/sys/kernel/debug:/sys/kernel/debug"
+      - "./:/etc/stackstate-agent/conf.d/aws_topology.d"
     environment:
       STS_API_KEY: "${STS_API_KEY}"
       STS_STS_URL: "${STACKSTATE_ENDPOINT}"

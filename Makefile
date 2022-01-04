@@ -1,6 +1,6 @@
 AGENT_BRANCH=STAC-0-Open-telemetry-support
 STS_API_KEY=
-AGENT_ENDPOINT=http://192.168.0.110
+AGENT_ENDPOINT=http://192.168.0.100:7077/stsAgent
 
 
 nodejs-cleanup:

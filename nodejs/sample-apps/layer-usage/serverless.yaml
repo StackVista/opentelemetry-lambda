@@ -6,7 +6,6 @@ service: ${self:project.name}-${self:project.type}
 
 plugins:
   - serverless-step-functions
-
 provider:
   name: aws
   profile: ${self:service}-${self:provider.stage}
@@ -32,7 +31,6 @@ provider:
 
   environment:
     # Open Telemetry
-    AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
     OTEL_LOG_LEVEL: info
     OTEL_TRACES_EXPORTER: otlp
     OTEL_PROPAGATORS: tracecontext
@@ -98,14 +96,14 @@ resources:
 functions:
   ExampleOpenTelemetry:
     handler: example.main
+    environment:
+      AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
     layers:
       - "arn:aws:lambda:eu-west-1:901920570463:layer:aws-otel-nodejs-ver-1-0-0:1"
       - !ImportValue sls-otel-nodejs-dev-OpenTelemetryNodeJSLambdaLayerQualifiedArn
 
   ExampleReceiverOpenTelemetry:
     handler: example.receiver
-    environment:
-      AWS_LAMBDA_EXEC_WRAPPER: # Empty to not use OTEL
 
 stepFunctions:
   stateMachines:
