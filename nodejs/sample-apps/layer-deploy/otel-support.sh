@@ -1,19 +1,19 @@
 clear
-echo "===== This script will validate if your Lambda Function has the correct settings to potentially work with Open Telemetry ====="
-echo "===== This will be done by asking you to input identifiers pointing to the function ====="
-echo "===== and those will be used to pull Lambda Layers and Env Variables to validate the function =====\n\n"
+echo "-- Open Telemetry Lambda Support --"
+echo ""
+echo "This script will validate if a Lambda function contains all the correct settings and layers to functions with Open Telemetry.\n"
 
 
 # In what region is the function running
-echo "What AWS Region is your lambda function running in ? [default: eu-west-1]"
+echo "'AWS Region' the function is running in? [default: eu-west-1]"
 echo "Press Enter to proceed with the default"
 read -p ':' REGION
 REGION=${REGION:-eu-west-1}
-echo "Using region '$REGION'\n"
+printf "Using region '%s'\n\n" "$REGION"
 
 # Determine the function name
 functionName () {
-  read -p 'What is your Lambda Function Name: ' FUNCTION_NAME
+  read -p 'Enter your lambda function name [required]: ' FUNCTION_NAME
   if [ -z "$FUNCTION_NAME" ]
   then
     # Function name should not be empty
@@ -42,9 +42,9 @@ if [ -n "$AWS_PROFILE_INPUT" ]
 fi
 echo ""
 
-read -p 'Enter the NODEJS Lambda layer name (default: OpenTelemetryNodeJS): ' NODEJS_LAMBDA_LAYER_NAME
-NODEJS_LAMBDA_LAYER_NAME=${NODEJS_LAMBDA_LAYER_NAME:-OpenTelemetryNodeJS}
+read -p 'Enter the Nodejs Lambda layer name [default: OpenTelemetryNodeJS]: ' NODEJS_LAMBDA_LAYER_NAME
 
+NODEJS_LAMBDA_LAYER_NAME=${NODEJS_LAMBDA_LAYER_NAME:-OpenTelemetryNodeJS}
 COLLECTOR_LAMBDA_LAYER_NAME=${COLLECTOR_LAMBDA_LAYER_NAME:-aws-otel-nodejs-ver}
 
 echo ""
@@ -71,9 +71,9 @@ fi
 
 
 if [[ "$TRACING_CONFIG_MODE" != "PassThrough" && "$TRACING_CONFIG_MODE" != "Active" ]]; then
-  echo "❌ - Tracing config '$TRACING_CONFIG_MODE' is invalid, The tracing config for this function is incorrect. It needs to be either 'PassThrough' or 'Active' for Open Telemetry to work (Please note that 'PassThrough' is recommended as 'Active' costs $)"
+  echo "[FAILURE] - Tracing config '$TRACING_CONFIG_MODE' is invalid, The tracing config for this function is incorrect. It needs to be either 'PassThrough' or 'Active' for Open Telemetry to work (Please note that 'PassThrough' is recommended as 'Active' costs $)"
 else
-  echo "✅ - Tracing config '$TRACING_CONFIG_MODE' is valid"
+  echo "[SUCCESS] - Tracing config '$TRACING_CONFIG_MODE' is valid"
 fi
 
 
@@ -96,13 +96,13 @@ function missing_env_variable_test {
   fi
 
   if [[ -z $2 && $LAMBDA_ENV_VARIABLE == "None" ]]; then
-    echo "❌ - Missing environment variable for '$1'"
+    echo "[FAILURE] - Missing environment variable for '$1'"
   elif [[ $LAMBDA_ENV_VARIABLE == "None" ]]; then
-    echo "❌ - Missing environment variable for '$1'. Recommended value '$2'"
+    echo "[FAILURE] - Missing environment variable for '$1'. Recommended value '$2'"
   elif [[ -n $2 && "$LAMBDA_ENV_VARIABLE" != "$2" ]]; then
-    echo "❌ - Incorrect or Missing environment variable for '$1'. Current variable is '$LAMBDA_ENV_VARIABLE', Required variable is '$2'"
+    echo "[FAILURE] - Incorrect or Missing environment variable for '$1'. Current variable is '$LAMBDA_ENV_VARIABLE', Required variable is '$2'"
   else
-    echo "✅ - '$1' environment variable is valid, found '$LAMBDA_ENV_VARIABLE'"
+    echo "[SUCCESS] - '$1' environment variable is valid, found '$LAMBDA_ENV_VARIABLE'"
   fi
 }
 
@@ -130,14 +130,14 @@ else
 fi
 
 if [[ "$LAYERS" == *"layer:$COLLECTOR_LAMBDA_LAYER_NAME"* ]]; then
-  echo "✅ - Collector Lambda Layer Found"
+  echo "[SUCCESS] - Collector Lambda Layer Found"
 else
-  echo "❌ - Collector Lambda Layer Not Found, Looked for the layer name '$COLLECTOR_LAMBDA_LAYER_NAME'. Supported layers can be found at https://aws-otel.github.io/docs/getting-started/lambda/lambda-js"
+  echo "[FAILURE] - Collector Lambda Layer Not Found, Looked for the layer name '$COLLECTOR_LAMBDA_LAYER_NAME'. Supported layers can be found at https://aws-otel.github.io/docs/getting-started/lambda/lambda-js"
 fi
 
 if [[ "$LAYERS" == *"layer:$NODEJS_LAMBDA_LAYER_NAME"* ]]; then
-  echo "✅ - NodeJS Lambda Layer Found"
+  echo "[SUCCESS] - NodeJS Lambda Layer Found"
 else
-  echo "❌ - NodeJS Lambda Layer Not Found, Looked for the layer name '$NODEJS_LAMBDA_LAYER_NAME'. Please add this Lambda Layer to your Lambda Function"
+  echo "[FAILURE] - NodeJS Lambda Layer Not Found, Looked for the layer name '$NODEJS_LAMBDA_LAYER_NAME'. Please add this Lambda Layer to your Lambda Function"
 fi
 
