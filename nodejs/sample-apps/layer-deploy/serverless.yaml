@@ -11,6 +11,11 @@ provider:
   region: ${env:AWS_REGION, 'eu-west-1'}
   stackName: ${self:service}-${self:provider.stage}
   runtime: nodejs14.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutBucketPolicy
+      Resource: "*"
 
 layers:
   OpenTelemetryNodeJS:

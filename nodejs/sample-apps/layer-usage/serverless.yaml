@@ -25,6 +25,7 @@ provider:
         - sqs:SendMessage
         - sns:Publish
         - s3:PutObject
+        - s3:PutBucketPolicy
         - lambda:InvokeFunction
         - states:StartExecution
       Resource: "*"

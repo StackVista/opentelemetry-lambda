@@ -30,7 +30,8 @@ nodejs-compile: nodejs-test
 
 nodejs-agent-package: nodejs-compile
 	cd nodejs/sample-apps/sts-agent && \
-		AGENT_BRANCH=${AGENT_BRANCH} STS_API_KEY=${STS_API_KEY} \
+		AGENT_BRANCH=${AGENT_BRANCH} \
+		STS_API_KEY=${STS_API_KEY} \
 		AGENT_ENDPOINT=${AGENT_ENDPOINT} \
 		make pull-agent-docker-image
 
