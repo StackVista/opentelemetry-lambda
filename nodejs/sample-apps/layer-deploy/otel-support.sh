@@ -7,7 +7,9 @@ echo "This script will validate if a Lambda function contains all the correct se
 # In what region is the function running
 echo "'AWS Region' the function is running in? [default: eu-west-1]"
 echo "Press Enter to proceed with the default"
-read -p ':' REGION
+if [ -z "$IGNORE_OPTIONS" ]; then
+  read -p ':' REGION
+fi
 REGION=${REGION:-eu-west-1}
 printf "Using region '%s'\n\n" "$REGION"
 
@@ -34,15 +36,19 @@ echo "Using function name '$FUNCTION_NAME'\n"
 # Determine and set a AWS_PROFILE for the cli command
 echo "Enter your 'AWS_PROFILE' to use with the AWS CLI calls? [default: ${AWS_PROFILE-None}]"
 echo "Press Enter to either use the default or your local env"
+if [ -z "$IGNORE_OPTIONS" ]; then
+  read -p ":" AWS_PROFILE_INPUT
+fi
 
-read -p ":" AWS_PROFILE_INPUT
 if [ -n "$AWS_PROFILE_INPUT" ]
   then
     AWS_PROFILE=$AWS_PROFILE_INPUT
 fi
 echo ""
 
-read -p 'Enter the Nodejs Lambda layer name [default: OpenTelemetryNodeJS]: ' NODEJS_LAMBDA_LAYER_NAME
+if [ -z "$IGNORE_OPTIONS" ]; then
+  read -p 'Enter the Nodejs Lambda layer name [default: OpenTelemetryNodeJS]: ' NODEJS_LAMBDA_LAYER_NAME
+fi
 
 NODEJS_LAMBDA_LAYER_NAME=${NODEJS_LAMBDA_LAYER_NAME:-OpenTelemetryNodeJS}
 COLLECTOR_LAMBDA_LAYER_NAME=${COLLECTOR_LAMBDA_LAYER_NAME:-aws-otel-nodejs-ver}

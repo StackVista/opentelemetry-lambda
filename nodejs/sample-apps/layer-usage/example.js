@@ -64,9 +64,20 @@ const s3OpenTelemetryExample = () => {
       Body: 'Random body content',
     }, (error, response) => {
       console.log(`S3 Response: `, response, error)
-      error ?
-        resolve({ s3: { error } }) :
-        resolve({ s3: { response } })
+      if (error) {
+        resolve({ s3: { error } })
+      }
+      else {
+        s3.deleteObject({
+          Bucket: `${bucketName}`,
+          Key: 'filename'
+        }, (error, response) => {
+          console.log(`S3 Response: `, response, error)
+          error ?
+            resolve({ s3: { error } }) :
+            resolve({ s3: { response } })
+        })
+      }
     })
   })
 }
@@ -113,11 +124,19 @@ const stepFunctionOpenTelemetryExample = () => {
   })
 }
 
-const httpOpenTelemetryExample = () => {
+const httpAOpenTelemetryExample = () => {
   return new Promise((resolve, reject) => {
-    axios.get(`https://www.google.com`)
-      .then((response) => resolve({ http: { response } }))
-      .catch((error) => resolve({ http: { error } }))
+    axios.get(`https://httpbin.org/ip`)
+      .then((response) => resolve({ http: { status: "HTTP Success" } }))
+      .catch((error) => resolve({ http: { status : "HTTP Failure" } }))
+  })
+}
+
+const httpBOpenTelemetryExample = () => {
+  return new Promise((resolve, reject) => {
+    axios.get(`https://httpbin.org/user-agent`)
+      .then((response) => resolve({ http: { status: "HTTP Success" } }))
+      .catch((error) => resolve({ http: { status : "HTTP Failure" } }))
   })
 }
 
@@ -129,7 +148,12 @@ module.exports.main = (event, context, callback) => {
     s3OpenTelemetryExample(),
     lambdaOpenTelemetryExample(),
     stepFunctionOpenTelemetryExample(),
-    httpOpenTelemetryExample(),
+
+    // Request a few times to see effect
+    httpAOpenTelemetryExample(),
+    httpAOpenTelemetryExample(),
+    httpAOpenTelemetryExample(),
+    httpBOpenTelemetryExample()
   ]).then((body) => {
     callback(null, {
       statusCode: 200,
