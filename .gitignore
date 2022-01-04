@@ -18,3 +18,9 @@ jspm_packages
 
 # Serverless directories
 .serverless
+
+nodejs/sample-serverless/.env
+
+.envrc
+.env
+otel-agent.docker
