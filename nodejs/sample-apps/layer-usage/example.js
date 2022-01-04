@@ -1,4 +1,6 @@
-const AWS = require("aws-sdk")
+const AWS = require("aws-sdk");
+const axios = require('axios');
+
 
 const region = process.env.AWS_REGION;
 const accountId = process.env.AWS_ACCOUNT_ID
@@ -111,6 +113,14 @@ const stepFunctionOpenTelemetryExample = () => {
   })
 }
 
+const httpOpenTelemetryExample = () => {
+  return new Promise((resolve, reject) => {
+    axios.get(`https://www.google.com`)
+      .then((response) => resolve({ http: { response } }))
+      .catch((error) => resolve({ http: { error } }))
+  })
+}
+
 
 module.exports.main = (event, context, callback) => {
   Promise.all([
@@ -119,6 +129,7 @@ module.exports.main = (event, context, callback) => {
     s3OpenTelemetryExample(),
     lambdaOpenTelemetryExample(),
     stepFunctionOpenTelemetryExample(),
+    httpOpenTelemetryExample(),
   ]).then((body) => {
     callback(null, {
       statusCode: 200,
