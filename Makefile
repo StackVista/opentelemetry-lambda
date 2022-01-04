@@ -1,74 +1,93 @@
-# For some reason the collector layer does not work thus we are using the full open telemetry layer from
-# https://aws-otel.github.io/docs/getting-started/lambda/lambda-js
-
-#   # Open Telemetry Collector
-#   collector-compile:
-#   	cd collector && make package
-#
-#   collector-package: collector-compile
-#   	mkdir -p build
-#   	rm -rf build/collector
-#   	mkdir -p build/collector
-#   	cp collector/build/collector-extension.zip build/collector/layer.zip
-#   	cp collector/sample-serverless/* build/collector/
-#   	shasum --algorithm 256 build/collector/layer.zip > build/collector/layer.sha-256
-#
-#   collector-deploy:
-#   	cd build/collector && serverless deploy
-#
-#   collector-remove:
-#   	cd build/collector && serverless remove
+AGENT_BRANCH=STAC-0-Open-telemetry-support
+STS_API_KEY=
+AGENT_ENDPOINT=http://192.168.0.110
 
 
-
-# General Functions
-cleanup:
-	rm -rf build
-	rm -rf collector/build
+nodejs-cleanup:
+	rm -rf build/nodejs
 	rm -rf nodejs/node_modules
 	rm -rf nodejs/packages/layer/build
 	rm -rf nodejs/packages/layer/node_modules
 	rm -rf nodejs/sample-apps/aws-sdk/build
 	rm -rf nodejs/sample-apps/aws-sdk/node_modules
+	rm -rf nodejs/sample-apps/layer-usage/node_modules
+	rm -rf nodejs/sample-apps/sts-agent/otel-agent.docker
 
+nodejs-install: nodejs-cleanup
+	cd nodejs && \
+		npm install
+	cd nodejs/sample-apps/layer-usage && \
+		npm install
 
-# Nodejs Install Functions
-node-install: cleanup
-	cd nodejs && npm install
+nodejs-test: nodejs-install
+	cd nodejs && \
+		npm run lint && \
+		npm run test
 
-node-test: node-install
-	cd nodejs && npm run lint && npm run test
+nodejs-compile: nodejs-test
+	cd nodejs && \
+		npm run compile
 
-node-compile: node-test
-	cd nodejs && npm run compile
+nodejs-agent-package: nodejs-compile
+	cd nodejs/sample-apps/sts-agent && \
+		AGENT_BRANCH=${AGENT_BRANCH} STS_API_KEY=${STS_API_KEY} \
+		AGENT_ENDPOINT=${AGENT_ENDPOINT} \
+		make pull-agent-docker-image
 
-node-package: node-compile
-	mkdir -p build
-	rm -rf build/nodejs
-	mkdir -p build/nodejs
-	cp nodejs/packages/layer/build/layer.zip build/nodejs/layer.zip
-	cp nodejs/sample-serverless/* build/nodejs/
-	shasum --algorithm 256 build/nodejs/layer.zip > build/nodejs/layer.sha-256
+nodejs-package: nodejs-agent-package
+	mkdir -p build/nodejs/layer-deploy
+	mkdir -p build/nodejs/layer-usage
+	mkdir -p build/nodejs/sample-agent
 
-node-deploy: node-package
-	cd build/nodejs && serverless deploy
+	# Cleanup Before Copy
+	rm -rf nodejs/sample-apps/layer-usage/node_modules
+	rm -rf nodejs/sample-apps/layer-deploy/node_modules
 
-node-deploy-example: node-package
-	cd build/nodejs && serverless deploy --config serverless.example.yaml
+	cp -R nodejs/packages/layer/build/layer.zip build/nodejs/layer-deploy/layer.zip # NodeJS Lambda
+	cp -R nodejs/sample-apps/layer-deploy/* build/nodejs/layer-deploy # Serverless base
+	cp -R nodejs/sample-apps/layer-usage/* build/nodejs/layer-usage # Serverless example base
+	cp -R nodejs/sample-apps/sts-agent/* build/nodejs/sample-agent
 
+	# Cleanup Before Packaging
+	rm -rf build/nodejs-build.zip
+	rm -rf build/nodejs/sample-agent/Makefile
+	mv build/nodejs/layer-deploy/README.md build/nodejs/README.md
 
-# Nodejs Verify OTEL Support
-node-example-otel-support:
+	chmod +x build/nodejs/sample-agent/otel-agent-deploy-run.sh
+	zip build/nodejs-build.zip build/nodejs/* -r
+	# shasum --algorithm 256 build/nodejs/layer.zip > build/nodejs/layer.sha-256
+
+nodejs-deploy-layer:
+	cd build/nodejs/layer-deploy && serverless deploy
+
+nodejs-deploy-example:
+	cd build/nodejs/layer-usage && serverless deploy
+
+nodejs-verify-example-otel-support:
 	AWS_PROFILE=otel-nodejs-example-dev \
-	FUNCTION=otel-nodejs-example-dev-ExampleOpenTelemetry \
-	./build/nodejs/verify-lambda-otel-support.sh
+		FUNCTION=otel-nodejs-example-dev-ExampleOpenTelemetry \
+		./build/nodejs/layer-deploy/otel-support.sh
 
+nodejs-verify-support:
+	AWS_PROFILE=otel-nodejs-example-dev \
+		./build/nodejs/layer-deploy/otel-support.sh
 
-# Nodejs Remove Functions
-node-remove:
-	cd build/nodejs && serverless remove
+nodejs-run-agent:
+	cd build/nodejs/sample-agent && \
+		chmod +x otel-agent-deploy-run.sh
+	cd build/nodejs/sample-agent && \
+		AGENT_BRANCH=${AGENT_BRANCH} \
+		STS_API_KEY=${STS_API_KEY} \
+		AGENT_ENDPOINT=${AGENT_ENDPOINT} \
+		./otel-agent-deploy-run.sh
 
-node-remove-example:
-	cd build/nodejs && serverless remove --config serverless.example.yaml
+nodejs-remove:
+	cd build/nodejs/layer-deploy && \
+		serverless remove
 
-node-remove-all: node-package node-remove-example node-remove cleanup
+nodejs-remove-example:
+	cd build/nodejs/layer-usage && \
+		serverless remove
+
+ngrok-local:
+	ngrok http --region=us --hostname=stackstate.trace-agent.ngrok.io 8126

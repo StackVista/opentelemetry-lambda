@@ -5,4 +5,4 @@ pull-agent-docker-image:
 	docker save -o otel-agent.docker docker.io/stackstate/stackstate-agent-2-test:${AGENT_BRANCH}
 
 run-agent-image:
-		./run-open-telemetry-agent.sh
+		./otel-agent-deploy-run.sh

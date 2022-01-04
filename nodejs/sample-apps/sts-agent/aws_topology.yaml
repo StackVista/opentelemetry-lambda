@@ -1,23 +1,11 @@
 init_config:
-  # Info Sec Account - Melcom
-  aws_access_key_id: '***REMOVED***'
-  aws_secret_access_key: '***REMOVED***'
-  external_id: 'pancakes'
+  aws_access_key_id: ''
+  aws_secret_access_key: ''
+  external_id: ''
 
 instances:
-  # binx Primary Region
-  - role_arn: arn:aws:iam::965323806078:role/StackStateAwsIntegrationRole
+  - role_arn: arn:aws:iam::<ACCOUNT_ID>:role/StackStateAwsIntegrationRole
     regions:
       - "global"
       - "eu-west-1"
-      - "us-east-1"
     min_collection_interval: 60
-    flowlog_bucket_name: 'custom-flowlog'
-
-  # binx Secondary Region
-  # - role_arn: arn:aws:iam::120431062118:role/StackStateAwsIntegrationRole
-  #   regions:
-  #     - "global"
-  #     - "eu-west-1"
-  #     - "us-east-1"
-  #   min_collection_interval: 60

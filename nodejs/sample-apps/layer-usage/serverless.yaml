@@ -4,6 +4,9 @@ project:
 
 service: ${self:project.name}-${self:project.type}
 
+plugins:
+  - serverless-step-functions
+
 provider:
   name: aws
   profile: ${self:service}-${self:provider.stage}
@@ -33,7 +36,7 @@ provider:
     OTEL_TRACES_EXPORTER: otlp
     OTEL_PROPAGATORS: tracecontext
     OTEL_TRACES_SAMPLER: always_on
-    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: https://stackstate.trace-agent.ngrok.io/open-telemetry
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${env:OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}/open-telemetry
 
     # Standard
     AWS_REGION_DEPLOYED: ${self:provider.region}
@@ -45,9 +48,33 @@ provider:
     SERVICE: ${self:service}
 
     # Resources
-    SNS_TOPIC_NAME: "${self:service}-otel-sns"
-    SQS_QUEUE_NAME: "${self:service}-otel-sqs"
-    S3_BUCKET_NAME: "${self:service}-otel-s3-bucket"
+    S3_BUCKET_NAME:
+      Fn::Join:
+        - "-"
+        - - "${self:service}"
+          - "s3"
+          - "otel"
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
+
+    SNS_TOPIC_NAME:
+      Fn::Join:
+        - "-"
+        - - "${self:service}"
+          - "sns"
+          - "otel"
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
+
+    SQS_QUEUE_NAME:
+      Fn::Join:
+        - "-"
+        - - "${self:service}"
+          - "sqs"
+          - "otel"
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
+
     STATE_MACHINE_NAME: "${self:service}-otel-state-machine"
 
 resources:
@@ -71,13 +98,13 @@ functions:
   ExampleOpenTelemetry:
     handler: example.main
     layers:
-      # Local Layer is broken rather use open telemetry distro layer
-      # - !ImportValue sls-otel-collector-dev-OpenTelemetryCollectorLambdaLayerQualifiedArn
       - "arn:aws:lambda:eu-west-1:901920570463:layer:aws-otel-nodejs-ver-1-0-0:1"
       - !ImportValue sls-otel-nodejs-dev-OpenTelemetryNodeJSLambdaLayerQualifiedArn
 
   ExampleReceiverOpenTelemetry:
     handler: example.receiver
+    environment:
+      AWS_LAMBDA_EXEC_WRAPPER: # Empty to not use OTEL
 
 stepFunctions:
   stateMachines:
@@ -96,6 +123,3 @@ stepFunctions:
         - http:
             path: gofunction
             method: GET
-
-plugins:
-  - serverless-step-functions
