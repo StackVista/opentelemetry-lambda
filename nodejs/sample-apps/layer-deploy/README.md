@@ -33,17 +33,21 @@ run the `Serverless script`, Which should automatically deploy the layer for you
 - `Serverless`
   - Make sure you have `node` & `npm` installed on your environment
   - Go into the directory `build/layer-deploy` and run the following command `npm install` to install the node and serverless packages.
-  - An AWS_PROFILE is required to deploy this template as seen in the `serverless.yaml` under the `provider.profile` variable
-    - To create this AWS_PROFILE create the following entry under these files:
+  - An `AWS_PROFILE` is required to deploy this template as seen in the `serverless.yaml` under the `provider.profile` variable
+    - To create this `AWS_PROFILE` create the following entry under these files:
       - `vi ~/.aws/config`
-        - [profile otel-nodejs-dev] \
-          region=`<REGION_FOR_DEPLOYMENT>` \
-          source_profile=`otel-nodejs-dev` \
-          role_arn=`<A_ROLE_WITH_SUFFICIENT_PERMISSIONS>`
+        ```
+        [profile otel-nodejs-dev]
+        region=<REGION_FOR_DEPLOYMENT>
+        source_profile=otel-nodejs-dev
+        role_arn=<A_ROLE_WITH_SUFFICIENT_PERMISSIONS>
+        ```
       - `vi ~/.aws/credentials`
-        - [otel-nodejs-dev] \
-          aws_access_key_id=`<ACCESS_KEY>` \
-          aws_secret_access_key=`<SECRET_ACCESS_KEY>`
+        ```
+        [otel-nodejs-dev]
+        aws_access_key_id=`<ACCESS_KEY>`
+        aws_secret_access_key=`<SECRET_ACCESS_KEY>`
+        ```
   - Run the following to deploy the serverless template
     ```
     npx sls deploy
@@ -85,21 +89,25 @@ run the `Serverless script`, Which should automatically deploy the layer for you
 - `Serverless`
   - Make sure you have `node` & `npm` installed on your environment
   - Go into the directory `build/layer-usage` and run the following command `npm install` to install the npm packages
-  - We are using a different AWS_PROFILE to deploy this example template as seen under the `serverless.yaml` `provider.profile` variable
-    - To create this AWS_PROFILE create the following entry under these files:
+  - We are using a different `AWS_PROFILE` to deploy this example template as seen under the `serverless.yaml` `provider.profile` variable
+    - To create this `AWS_PROFILE` create the following entry under these files:
       - `vi ~/.aws/config`
-        - [profile otel-nodejs-example-dev] \
-          region=`<REGION_FOR_DEPLOYMENT>` \
-          source_profile=`otel-nodejs-example-dev` \
-          role_arn=`<A_ROLE_WITH_SUFFICIENT_PERMISSIONS>`
+        ```
+        [profile otel-nodejs-example-dev]
+        region=`<REGION_FOR_DEPLOYMENT>`
+        source_profile=`otel-nodejs-example-dev`
+        role_arn=`<A_ROLE_WITH_SUFFICIENT_PERMISSIONS>`
+        ```
       - `vi ~/.aws/credentials`
-        - [otel-nodejs-example-dev] \
-          aws_access_key_id=`<ACCESS_KEY>` \
-          aws_secret_access_key=`<SECRET_ACCESS_KEY>`
+        ```
+        [otel-nodejs-example-dev]
+        aws_access_key_id=`<ACCESS_KEY>`
+        aws_secret_access_key=`<SECRET_ACCESS_KEY>`
+        ```
   - Go into this directory with the `layer-usage/serverless.yaml` script
   - Run
     ```
-    serverless plugin install -n serverless-step-functions
+    npx sls plugin install -n serverless-step-functions
     ```
   - Run the following to deploy the serverless template [Change the URL to the location where the StackState Trace Agent is running]:
     ```
@@ -166,10 +174,10 @@ Follow these steps to run the agent that contains the current Open Telemetry exa
   - `External ID` - a shared secret that StackState will present when assuming a role. Use the same value across all AWS accounts. For example, uniquesecret!1
   - `AWS Access Key ID` - The Access Key ID of the IAM user used by the StackState Agent. If the StackState instance is running within AWS, enter the value use-role and the instance will authenticate using the attached IAM role.
   - `AWS Secret Access Key` - The Secret Access Key of the IAM user used by the StackState Agent. If the StackState instance is running within AWS, enter the value use-role and the instance will authenticate using the attached IAM role.
-- Make sure the following env variables are available for the docker agent to function
+- Make sure the following env variables are available for the docker agent to function. (This environment variable values can be found on the StackPack Agent v2 installation page)
   - `STACKSTATE_ENDPOINT`
     - The location where you are running your `StackState Receiver` and `Port [Usually 7077]`. You can see where this URL is used in the `otel-agent-docker-compose.yml` file
-    - Example of this URL will look like this: http://192.168.1.104:7077
+    - Example of this URL will look like this: http://192.168.1.104:7077/stsAgent
   - `STS_API_KEY`
     - Your StackState agent API key
   - `AGENT_BRANCH`
