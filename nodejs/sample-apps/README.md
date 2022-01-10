@@ -58,7 +58,7 @@ run the `Serverless script`, Which should automatically deploy the layer for you
 - `AWS Console [Manual]`
   - Head over to your AWS lambda layers page: [https://console.aws.amazon.com/lambda/home#/layers](https://console.aws.amazon.com/lambda/home#/layers)
   - Click on the `Create Layer` button in the top right corner
-  - Give the lambda layer a name `(Recommended calling it 'OpenTelemetryNodeJS' and is required if you are planning to use any of the example serverless.yaml scripts)`
+  - Give the lambda layer a name `(Recommended calling it 'otel-nodejs-layer' and is required if you are planning to use any of the example serverless.yaml scripts)`
   - Tick the `Upload a .zip file` and click the `upload button
   - Select and Upload the [`build/layer-deploy/layer.zip`](build/layer-deploy/layer.zip)
   - Click the Create button to create this Lambda Layer
@@ -67,7 +67,7 @@ run the `Serverless script`, Which should automatically deploy the layer for you
 ## Open Telemetry Usage Example [Optional]
 
 #### ⚠ ⚠ WARNING ⚠ ⚠
-It only works if you used the recommended name for the layer you deployed above IE `OpenTelemetryNodeJS`
+It only works if you used the recommended name for the layer you deployed above IE `otel-nodejs-layer`
 
 Deploying this example will create the following AWS Services allowing you to see traces from all of them:
 - `Lambda Function`
@@ -129,7 +129,7 @@ This step will have to be repeated for each Lambda function you want Open Teleme
     - [https://aws-otel.github.io/docs/getting-started/lambda/lambda-js#add-the-arn-of-the-lambda-layer](https://aws-otel.github.io/docs/getting-started/lambda/lambda-js#add-the-arn-of-the-lambda-layer)
     - Tested with `arn:aws:lambda:<AWS_REGION>:901920570463:layer:aws-otel-nodejs-ver-1-0-0:1`
       The `nodejs layer` you deployed above under the `Manual Hosting` section is required to enrich the `StackState Open Telemetry` data.
-    - `arn:aws:lambda:<REGION>:<ACCOUNT>:layer:OpenTelemetryNodeJS:<VERSION>`
+    - `arn:aws:lambda:<REGION>:<ACCOUNT>:layer:otel-nodejs-layer:<VERSION>`
 - Add the following `Environment Variables`
   - `AWS_LAMBDA_EXEC_WRAPPER`: /opt/otel-handler
   - `OTEL_LOG_LEVEL`: info

@@ -18,7 +18,8 @@ provider:
       Resource: "*"
 
 layers:
-  OpenTelemetryNodeJS:
+  OTELNodeJS:
+    name: ${self:service}-layer
     compatibleRuntimes:
       - nodejs10.x
       - nodejs12.x

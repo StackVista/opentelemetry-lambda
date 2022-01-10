@@ -100,8 +100,8 @@ functions:
     environment:
       AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
     layers:
-      - "arn:aws:lambda:eu-west-1:901920570463:layer:aws-otel-nodejs-ver-1-0-0:1"
-      - !ImportValue sls-otel-nodejs-dev-OpenTelemetryNodeJSLambdaLayerQualifiedArn
+      - !ImportValue sls-otel-nodejs-collector-dev-OTELCollectorLambdaLayerQualifiedArn
+      - !ImportValue sls-otel-nodejs-dev-OTELNodeJSLambdaLayerQualifiedArn
 
   ExampleReceiverOpenTelemetry:
     handler: example.receiver

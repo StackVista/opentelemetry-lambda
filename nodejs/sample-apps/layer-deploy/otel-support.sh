@@ -47,11 +47,11 @@ fi
 echo ""
 
 if [ -z "$IGNORE_OPTIONS" ]; then
-  read -p 'Enter the Nodejs Lambda layer name [default: OpenTelemetryNodeJS]: ' NODEJS_LAMBDA_LAYER_NAME
+  read -p 'Enter the Nodejs Lambda layer name [default: otel-nodejs-layer]: ' NODEJS_LAMBDA_LAYER_NAME
 fi
 
-NODEJS_LAMBDA_LAYER_NAME=${NODEJS_LAMBDA_LAYER_NAME:-OpenTelemetryNodeJS}
-COLLECTOR_LAMBDA_LAYER_NAME=${COLLECTOR_LAMBDA_LAYER_NAME:-aws-otel-nodejs-ver}
+NODEJS_LAMBDA_LAYER_NAME=${NODEJS_LAMBDA_LAYER_NAME:-otel-nodejs-layer}
+COLLECTOR_LAMBDA_LAYER_NAME=${COLLECTOR_LAMBDA_LAYER_NAME:-otel-nodejs-collector-layer}
 
 echo ""
 echo "** Running unit tests for the Lambda function '$FUNCTION_NAME' **"

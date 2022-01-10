@@ -24,3 +24,7 @@ nodejs/sample-serverless/.env
 .envrc
 .env
 otel-agent.docker
+
+# Ignore dynamic official layers
+collector/official-layers/layers/*/layer.zip
+collector/official-layers/layers/*/layer

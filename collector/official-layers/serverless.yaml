@@ -1,6 +1,6 @@
 project:
   name: otel
-  type: collector
+  type: ${env:PULL_LAYER_TYPE}-collector
 
 service: ${self:project.name}-${self:project.type}
 
@@ -10,10 +10,10 @@ provider:
   stage: ${env:STAGE, 'dev'}
   region: ${env:AWS_REGION, 'eu-west-1'}
   stackName: ${self:service}-${self:provider.stage}
-  runtime: go1.x
+  runtime: ${env:RUNTIME}
 
 layers:
-  OpenTelemetryCollector:
+  OTELCollector:
+    name: ${self:service}-layer
     package:
-      artifact: layer.zip
-    retain: false
+      artifact: layers/${env:PULL_LAYER_TYPE}/layer.zip
