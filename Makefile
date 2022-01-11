@@ -4,6 +4,8 @@ OTLP_TRACES_PROTOCAL=https
 OTLP_TRACES_ENDPOINT=stackstate.trace-agent.ngrok.io
 
 
+# TODO Add Optional Agent compile from branch for dev not forced
+
 ##########################################################
 #################### Official Layer ######################
 ##########################################################
@@ -11,11 +13,11 @@ OTLP_TRACES_ENDPOINT=stackstate.trace-agent.ngrok.io
 official-collector-cleanup:
 	rm -rf collector/official-layers/node_modules
 
-	rm -rf build/nodejs/official-layer
+	rm -rf build/nodejs/collector-layer
 	rm -rf collector/official-layers/layers/nodejs/layer
 	rm -rf collector/official-layers/layers/nodejs/layer.zip
 
-	rm -rf build/python38/official-layer
+	rm -rf build/python38/collector-layer
 	rm -rf collector/official-layers/layers/python38/layer
 	rm -rf collector/official-layers/layers/python38/layer.zip
 
@@ -24,103 +26,103 @@ official-collector-install:
 		./pull-layers.sh
 
 official-collector-package: official-collector-install
-	mkdir -p build/nodejs/official-layer/layers/nodejs
-	mkdir -p build/python38/official-layer/layers/python38
-	mkdir -p build/dotnet/official-layer/layers/dotnet
-	mkdir -p build/golang/official-layer/layers/golang
-	mkdir -p build/java/official-layer/layers/java
+	mkdir -p build/nodejs/collector-layer/layers/nodejs
+	mkdir -p build/python38/collector-layer/layers/python38
+	mkdir -p build/dotnet/collector-layer/layers/dotnet
+	mkdir -p build/golang/collector-layer/layers/golang
+	mkdir -p build/java/collector-layer/layers/java
 
-	cp collector/official-layers/layers/nodejs/layer.zip build/nodejs/official-layer/layers/nodejs/layer.zip
-	cp collector/official-layers/layers/nodejs/README.md build/nodejs/official-layer/README.md
-	cp collector/official-layers/serverless.yaml build/nodejs/official-layer/serverless.yaml
-	cp collector/official-layers/package.json build/nodejs/official-layer/package.json
+	cp collector/official-layers/layers/nodejs/layer.zip build/nodejs/collector-layer/layers/nodejs/layer.zip
+	cp collector/official-layers/layers/nodejs/README.md build/nodejs/collector-layer/README.md
+	cp collector/official-layers/serverless.yaml build/nodejs/collector-layer/serverless.yaml
+	cp collector/official-layers/package.json build/nodejs/collector-layer/package.json
 
-	cp collector/official-layers/layers/python38/layer.zip build/python38/official-layer/layers/python38/layer.zip
-	cp collector/official-layers/layers/python38/README.md build/python38/official-layer/README.md
-	cp collector/official-layers/serverless.yaml build/python38/official-layer/serverless.yaml
-	cp collector/official-layers/package.json build/python38/official-layer/package.json
+	cp collector/official-layers/layers/python38/layer.zip build/python38/collector-layer/layers/python38/layer.zip
+	cp collector/official-layers/layers/python38/README.md build/python38/collector-layer/README.md
+	cp collector/official-layers/serverless.yaml build/python38/collector-layer/serverless.yaml
+	cp collector/official-layers/package.json build/python38/collector-layer/package.json
 
-	cp collector/official-layers/layers/dotnet/layer.zip build/dotnet/official-layer/layers/dotnet/layer.zip
-	cp collector/official-layers/layers/dotnet/README.md build/dotnet/official-layer/README.md
-	cp collector/official-layers/serverless.yaml build/dotnet/official-layer/serverless.yaml
-	cp collector/official-layers/package.json build/dotnet/official-layer/package.json
+	cp collector/official-layers/layers/dotnet/layer.zip build/dotnet/collector-layer/layers/dotnet/layer.zip
+	cp collector/official-layers/layers/dotnet/README.md build/dotnet/collector-layer/README.md
+	cp collector/official-layers/serverless.yaml build/dotnet/collector-layer/serverless.yaml
+	cp collector/official-layers/package.json build/dotnet/collector-layer/package.json
 
-	cp collector/official-layers/layers/golang/layer.zip build/golang/official-layer/layers/golang/layer.zip
-	cp collector/official-layers/layers/golang/README.md build/golang/official-layer/README.md
-	cp collector/official-layers/serverless.yaml build/golang/official-layer/serverless.yaml
-	cp collector/official-layers/package.json build/golang/official-layer/package.json
+	cp collector/official-layers/layers/golang/layer.zip build/golang/collector-layer/layers/golang/layer.zip
+	cp collector/official-layers/layers/golang/README.md build/golang/collector-layer/README.md
+	cp collector/official-layers/serverless.yaml build/golang/collector-layer/serverless.yaml
+	cp collector/official-layers/package.json build/golang/collector-layer/package.json
 
-	cp collector/official-layers/layers/java/layer.zip build/java/official-layer/layers/java/layer.zip
-	cp collector/official-layers/layers/java/README.md build/java/official-layer/README.md
-	cp collector/official-layers/serverless.yaml build/java/official-layer/serverless.yaml
-	cp collector/official-layers/package.json build/java/official-layer/package.json
+	cp collector/official-layers/layers/java/layer.zip build/java/collector-layer/layers/java/layer.zip
+	cp collector/official-layers/layers/java/README.md build/java/collector-layer/README.md
+	cp collector/official-layers/serverless.yaml build/java/collector-layer/serverless.yaml
+	cp collector/official-layers/package.json build/java/collector-layer/package.json
 
 official-collector-deploy-nodejs: official-collector-package
-	cd build/nodejs/official-layer && npm install
-	cd build/nodejs/official-layer && \
+	cd build/nodejs/collector-layer && npm install
+	cd build/nodejs/collector-layer && \
       	RUNTIME="nodejs14.x" \
       	PULL_LAYER_TYPE="nodejs" \
       	npx sls deploy
 
 official-collector-deploy-python: official-collector-package
-	cd build/python38/official-layer && npm install
-	cd build/python38/official-layer && \
+	cd build/python38/collector-layer && npm install
+	cd build/python38/collector-layer && \
       	RUNTIME="python3.8" \
       	PULL_LAYER_TYPE="python38" \
       	npx sls deploy
 
 official-collector-deploy-java: official-collector-package
-	cd build/java/official-layer && npm install
-	cd build/java/official-layer && \
+	cd build/java/collector-layer && npm install
+	cd build/java/collector-layer && \
       	RUNTIME="java11" \
       	PULL_LAYER_TYPE="java" \
       	npx sls deploy
 
 official-collector-deploy-golang: official-collector-package
-	cd build/golang/official-layer && npm install
-	cd build/golang/official-layer && \
+	cd build/golang/collector-layer && npm install
+	cd build/golang/collector-layer && \
       	RUNTIME="go1.x" \
       	PULL_LAYER_TYPE="golang" \
       	npx sls deploy
 
 official-collector-deploy-dotnet: official-collector-package
-	cd build/dotnet/official-layer && npm install
-	cd build/dotnet/official-layer && \
+	cd build/dotnet/collector-layer && npm install
+	cd build/dotnet/collector-layer && \
       	RUNTIME="dotnetcore3.1" \
       	PULL_LAYER_TYPE="dotnet" \
       	npx sls deploy
 
 official-collector-remove-nodejs: official-collector-package
-	cd build/nodejs/official-layer && npm install
-	cd build/nodejs/official-layer && \
+	cd build/nodejs/collector-layer && npm install
+	cd build/nodejs/collector-layer && \
       	RUNTIME="nodejs14.x" \
       	PULL_LAYER_TYPE="nodejs" \
       	npx sls remove
 
 official-collector-remove-python: official-collector-package
-	cd build/python38/official-layer && npm install
-	cd build/python38/official-layer && \
+	cd build/python38/collector-layer && npm install
+	cd build/python38/collector-layer && \
       	RUNTIME="python3.8" \
       	PULL_LAYER_TYPE="python38" \
       	npx sls remove
 
 official-collector-remove-java: official-collector-package
-	cd build/java/official-layer && npm install
-	cd build/java/official-layer && \
+	cd build/java/collector-layer && npm install
+	cd build/java/collector-layer && \
       	RUNTIME="java11" \
       	PULL_LAYER_TYPE="java" \
       	npx sls remove
 
 official-collector-remove-golang: official-collector-package
-	cd build/golang/official-layer && npm install
-	cd build/golang/official-layer && \
+	cd build/golang/collector-layer && npm install
+	cd build/golang/collector-layer && \
       	RUNTIME="go1.x" \
       	PULL_LAYER_TYPE="golang" \
       	npx sls remove
 
 official-collector-remove-dotnet: official-collector-package
-	cd build/dotnet/official-layer && npm install
-	cd build/dotnet/official-layer && \
+	cd build/dotnet/collector-layer && npm install
+	cd build/dotnet/collector-layer && \
       	RUNTIME="dotnetcore3.1" \
       	PULL_LAYER_TYPE="dotnet" \
       	npx sls remove
@@ -137,12 +139,7 @@ official-collector-remove-all: official-collector-remove-nodejs official-collect
 #################### NODEJS ######################
 ##################################################
 
-nodejs-verify-dir:
-	mkdir -p build/nodejs/layer-deploy
-	mkdir -p build/nodejs/layer-usage
-	mkdir -p build/nodejs/sample-agent
-
-nodejs-cleanup: nodejs-verify-dir
+nodejs-cleanup:
 	rm -rf build/nodejs
 	rm -rf build/nodejs-build.zip
 	rm -rf nodejs/node_modules
@@ -150,13 +147,18 @@ nodejs-cleanup: nodejs-verify-dir
 	rm -rf nodejs/packages/layer/node_modules
 	rm -rf nodejs/sample-apps/aws-sdk/build
 	rm -rf nodejs/sample-apps/aws-sdk/node_modules
-	rm -rf nodejs/sample-apps/layer-usage/node_modules
+	rm -rf nodejs/sample-apps/enrich-layer/usage-example/node_modules
 	rm -rf nodejs/sample-apps/sts-agent/otel-agent.docker
 
-nodejs-install: nodejs-cleanup
+nodejs-verify-dir: nodejs-cleanup
+	mkdir -p build/nodejs/enrich-layer
+	mkdir -p build/nodejs/enrich-layer/usage-example
+	mkdir -p build/nodejs/sample-agent
+
+nodejs-install: nodejs-verify-dir
 	cd nodejs && \
 		npm install
-	cd nodejs/sample-apps/layer-usage && \
+	cd nodejs/sample-apps/enrich-layer/usage-example && \
 		npm install
 
 nodejs-test: nodejs-install
@@ -177,36 +179,41 @@ nodejs-agent-package: nodejs-compile
 
 nodejs-package: nodejs-agent-package official-collector-package
 	# nodejs-agent-package
-	mkdir -p build/nodejs/layer-deploy
-	mkdir -p build/nodejs/layer-usage
+	mkdir -p build/nodejs/enrich-layer
+	# mkdir -p build/nodejs/enrich-layer/usage-example
 	mkdir -p build/nodejs/sample-agent
 
-	# Cleanup Before Copy
-	rm -rf nodejs/sample-apps/layer-usage/node_modules
-	rm -rf nodejs/sample-apps/layer-deploy/node_modules
-
-	cp -R nodejs/packages/layer/build/layer.zip build/nodejs/layer-deploy/layer.zip # NodeJS Lambda
-	cp -R nodejs/sample-apps/layer-deploy/* build/nodejs/layer-deploy # Serverless base
-	cp -R nodejs/sample-apps/layer-usage/* build/nodejs/layer-usage # Serverless example base
+	cp -R nodejs/packages/layer/build/layer.zip build/nodejs/enrich-layer/layer.zip # NodeJS Lambda
+	cp -R nodejs/sample-apps/enrich-layer/* build/nodejs/enrich-layer # Serverless base
+	# cp -R nodejs/sample-apps/enrich-layer/usage-example/* build/nodejs/enrich-layer/usage-example # Serverless example base
 	cp -R nodejs/sample-apps/sts-agent/* build/nodejs/sample-agent
 	cp -R nodejs/sample-apps/README.md build/nodejs/README.md
 
 	# Cleanup Before Packaging
 	rm -rf build/nodejs-build.zip
 	rm -rf build/nodejs/sample-agent/Makefile
+	rm -rf build/**/collector-layer/README.md
 
 	chmod +x build/nodejs/sample-agent/otel-agent-deploy-run.sh
 
-	# TODO
-	# zip build/nodejs-build.zip build/nodejs/* -r
+	rm -rf build/**/.serverless
+	rm -rf build/**/node_modules
+	rm -rf build/**/package-lock.json
+	rm -rf build/**/*-build.zip
+
+	zip build/nodejs/nodejs-build.zip build/nodejs/* -r
+	zip build/dotnet/dotnet-build.zip build/dotnet/* -r
+	zip build/golang/golang-build.zip build/golang/* -r
+	zip build/java/java-build.zip build/java/* -r
+	zip build/python38/python38-build.zip build/python38/* -r
 
 nodejs-deploy-layer: official-collector-deploy-nodejs
-	cd build/nodejs/layer-deploy && \
+	cd build/nodejs/enrich-layer && \
 		npm install && \
 		npx sls deploy
 
 nodejs-deploy-example: nodejs-deploy-layer
-	cd build/nodejs/layer-usage && \
+	cd build/nodejs/enrich-layer/usage-example && \
 		npm install && \
 		OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTLP_TRACES_PROTOCAL}://${OTLP_TRACES_ENDPOINT} \
 		npx sls deploy
@@ -214,15 +221,15 @@ nodejs-deploy-example: nodejs-deploy-layer
 	IGNORE_OPTIONS=true \
 		AWS_PROFILE=otel-nodejs-example-dev \
 		FUNCTION=otel-nodejs-example-dev-ExampleOpenTelemetry \
-		./build/nodejs/layer-deploy/otel-support.sh
+		./build/nodejs/enrich-layer/otel-support.sh
 
 nodejs-remove:
-	cd build/nodejs/layer-deploy && \
+	cd build/nodejs/enrich-layer && \
 		npm install && \
 		npx sls remove
 
 nodejs-remove-example:
-	cd build/nodejs/layer-usage && \
+	cd build/nodejs/enrich-layer/usage-example && \
         npm install && \
         OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTLP_TRACES_PROTOCAL}://${OTLP_TRACES_ENDPOINT} \
         npx sls remove

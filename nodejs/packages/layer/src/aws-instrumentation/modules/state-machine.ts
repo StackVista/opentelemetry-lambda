@@ -1,7 +1,12 @@
-import { MODULE } from '../definitions';
+import { OPEN_TELEMETRY_ENRICH_MODULE } from '../definitions';
 import { addGenericAwsRequestAttributes } from '../common';
 
-export const stateMachine: MODULE = (service: string, span, action, inputs) => {
+export const stateMachine: OPEN_TELEMETRY_ENRICH_MODULE = (
+  service: string,
+  span,
+  action,
+  inputs
+) => {
   console.log(
     '[STS] STATE MACHINE - Mapping custom information for state machine.'
   );

@@ -2,7 +2,7 @@ import { Span } from '@opentelemetry/api';
 import { AwsSdkRequestHookInformation } from '@opentelemetry/instrumentation-aws-sdk';
 
 /**
- * Add  a aws request value into the span to enrich the attribute information
+ * Add a aws request value into the span to enrich the attribute information
  */
 export const addAwsRequestAttribute = (
   span: Span,

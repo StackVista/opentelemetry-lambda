@@ -1,7 +1,7 @@
-import { MODULE } from '../definitions';
+import { OPEN_TELEMETRY_ENRICH_MODULE } from '../definitions';
 import { addGenericAwsRequestAttributes } from '../common';
 
-export const genericService: MODULE = (
+export const genericService: OPEN_TELEMETRY_ENRICH_MODULE = (
   service: string,
   span,
   action,

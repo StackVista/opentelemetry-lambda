@@ -17,13 +17,14 @@ You will also deploy a second layer that enhances this data allowing a more enri
 
 Summary of the steps required:
 
-- Deploy a Lambda Layer for custom enriched Open Telemetry data
+- Deploy a Lambda Layer for the Open Telemetry Collector
+- Deploy a Lambda Layer for the NodeJS Enrich Layer
 - Existing Lambda script updates
   - Add Environment Variables
-  - Reference the `Open Telemetry StackState NodeJS` layer.
-  - Add the Official `Open Telemetry Distro` layer, This is hosted by Open Telemetry `https://aws-otel.github.io/docs/getting-started/lambda/lambda-js#add-the-arn-of-the-lambda-layer`
+  - Reference the `Open Telemetry Collector` layer.
+  - Reference the `NodeJS Enrich` layer.
 
-## Deploying the Open Telemetry Lambda layer to enrich data [Recommended]
+## Deploying the Open Telemetry Collector Layer [Recommended]
 
 You have two options when deploying, serverless or manual.
 
@@ -32,7 +33,45 @@ run the `Serverless script`, Which should automatically deploy the layer for you
 
 - `Serverless`
   - Make sure you have `node` & `npm` installed on your environment
-  - Go into the directory `build/layer-deploy` and run the following command `npm install` to install the node and serverless packages.
+  - Go into the directory `build/collector-layer` and run the following command `npm install` to install the node and serverless packages.
+  - An `AWS_PROFILE` is required to deploy this template as seen in the `serverless.yaml` under the `provider.profile` variable
+    - To create this `AWS_PROFILE` create the following entry under these files:
+      - `vi ~/.aws/config`
+        ```
+        [profile otel-nodejs-collector-dev]
+        region=<REGION_FOR_DEPLOYMENT>
+        source_profile=otel-nodejs-collector-dev
+        role_arn=<A_ROLE_WITH_SUFFICIENT_PERMISSIONS>
+        ```
+      - `vi ~/.aws/credentials`
+        ```
+        [otel-nodejs-collector-dev]
+        aws_access_key_id=`<ACCESS_KEY>`
+        aws_secret_access_key=`<SECRET_ACCESS_KEY>`
+        ```
+  - Run the following to deploy the serverless template
+    ```
+      RUNTIME="nodejs14.x" \
+      PULL_LAYER_TYPE="nodejs" \
+      npx sls deploy
+    ```
+  - To verify the cloudformation template, you can go to your AWS account under cloudformation and see an active job called`otel-nodejs-collector-dev`
+
+
+- `AWS Console [Manual]`
+  - Head over to your AWS lambda layers page: [https://console.aws.amazon.com/lambda/home#/layers](https://console.aws.amazon.com/lambda/home#/layers)
+  - Click on the `Create Layer` button in the top right corner
+  - Give the lambda layer a name `(Recommended calling it 'otel-nodejs-layer' and is required if you are planning to use any of the example serverless.yaml scripts)`
+  - Tick the `Upload a .zip file` and click the `upload button
+  - Select and Upload the [`build/collector-layer/layers/nodejs/layer.zip`](build/collector-layer/layers/nodejs//layer.zip)
+  - Click the Create button to create this Lambda Layer
+
+
+## Deploying the Open Telemetry Enrich Layer [Recommended]
+
+- `Serverless`
+  - Make sure you have `node` & `npm` installed on your environment
+  - Go into the directory `build/enrich-layer` and run the following command `npm install` to install the node and serverless packages.
   - An `AWS_PROFILE` is required to deploy this template as seen in the `serverless.yaml` under the `provider.profile` variable
     - To create this `AWS_PROFILE` create the following entry under these files:
       - `vi ~/.aws/config`
@@ -60,7 +99,7 @@ run the `Serverless script`, Which should automatically deploy the layer for you
   - Click on the `Create Layer` button in the top right corner
   - Give the lambda layer a name `(Recommended calling it 'otel-nodejs-layer' and is required if you are planning to use any of the example serverless.yaml scripts)`
   - Tick the `Upload a .zip file` and click the `upload button
-  - Select and Upload the [`build/layer-deploy/layer.zip`](build/layer-deploy/layer.zip)
+  - Select and Upload the [`build/enrich-layer/layer.zip`](build/enrich-layer/layer.zip)
   - Click the Create button to create this Lambda Layer
 
 
@@ -88,7 +127,7 @@ run the `Serverless script`, Which should automatically deploy the layer for you
 
 - `Serverless`
   - Make sure you have `node` & `npm` installed on your environment
-  - Go into the directory `build/layer-usage` and run the following command `npm install` to install the npm packages
+  - Go into the directory `build/enrich-layer/usage-example` and run the following command `npm install` to install the npm packages
   - We are using a different `AWS_PROFILE` to deploy this example template as seen under the `serverless.yaml` `provider.profile` variable
     - To create this `AWS_PROFILE` create the following entry under these files:
       - `vi ~/.aws/config`
@@ -104,7 +143,7 @@ run the `Serverless script`, Which should automatically deploy the layer for you
         aws_access_key_id=`<ACCESS_KEY>`
         aws_secret_access_key=`<SECRET_ACCESS_KEY>`
         ```
-  - Go into this directory with the `layer-usage/serverless.yaml` script
+  - Go into this directory with the `enrich-layer/usage-example/serverless.yaml` script
   - Run
     ```
     npx sls plugin install -n serverless-step-functions
@@ -125,10 +164,9 @@ This step will have to be repeated for each Lambda function you want Open Teleme
 
 - Open the Lambda Function you wish to add Open Telemetry support to (One of your existing Lambda functions).
 - Add the following `Lambda Layers`.  ***Also note they MUST be added in this order***
-  - An official Open Telemetry layer is required for Open Telemetry to process data
-    - [https://aws-otel.github.io/docs/getting-started/lambda/lambda-js#add-the-arn-of-the-lambda-layer](https://aws-otel.github.io/docs/getting-started/lambda/lambda-js#add-the-arn-of-the-lambda-layer)
-    - Tested with `arn:aws:lambda:<AWS_REGION>:901920570463:layer:aws-otel-nodejs-ver-1-0-0:1`
-      The `nodejs layer` you deployed above under the `Manual Hosting` section is required to enrich the `StackState Open Telemetry` data.
+  - The `Collector Layer` you deployed above under the `Manual Hosting`
+    - `arn:aws:lambda:<REGION>:<ACCOUNT>:layer:otel-nodejs-collector-layer:<VERSION>`
+  - The `NodeJS Enrich Layer` you deployed above under the `Manual Hosting`
     - `arn:aws:lambda:<REGION>:<ACCOUNT>:layer:otel-nodejs-layer:<VERSION>`
 - Add the following `Environment Variables`
   - `AWS_LAMBDA_EXEC_WRAPPER`: /opt/otel-handler
@@ -153,7 +191,7 @@ This step will have to be repeated for each Lambda function you want Open Teleme
 
 ## Verify your Lambda Function [Optional but Recommended]
 
-- You can verify if you did everything by running the `./build/layer-deploy/otel-support.sh` script
+- You can verify if you did everything by running the `./build/enrich-layer/otel-support.sh` script
   - It will ask for the following inputs
     - `Lambda Function Region`
     - `Lambda Function Name`

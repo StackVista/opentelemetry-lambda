@@ -52,7 +52,7 @@ const {
 } = require('@opentelemetry/instrumentation-redis');
 import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-proto';
 import { extractRequestInformation } from './aws-instrumentation/common';
-import { awsEnrichServices } from './aws-instrumentation/modules';
+import { awsEnrichOpenTelemetry } from './aws-instrumentation/modules';
 import { Span } from '@opentelemetry/api';
 import { AwsSdkRequestHookInformation } from '@opentelemetry/instrumentation-aws-sdk';
 
@@ -76,10 +76,11 @@ const instrumentations = [
       // We do not pass down generically as the requests object may contain sensitive information
       // If the service is known then we attempt to map the known information if not then we attempt to apply a generic
       // version
-      if (service && action && awsEnrichServices[service]) {
-        awsEnrichServices[service](service, span, action, inputs);
+      if (service && action && awsEnrichOpenTelemetry[service]) {
+        awsEnrichOpenTelemetry[service](service, span, action, inputs);
       } else {
-        awsEnrichServices['genericService'](service, span, action, inputs);
+        // Attempt to find generic information
+        awsEnrichOpenTelemetry['genericService'](service, span, action, inputs);
       }
     },
   }),
