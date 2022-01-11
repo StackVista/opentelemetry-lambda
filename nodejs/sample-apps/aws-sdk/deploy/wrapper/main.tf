@@ -1,3 +1,9 @@
+provider "aws" {
+  region  = "eu-west-1"
+  profile = "otel-nodejs-example-dev"
+}
+
+
 module "hello-lambda-function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = ">= 2.24.0"
@@ -14,7 +20,8 @@ module "hello-lambda-function" {
   timeout     = 20
 
   layers = compact([
-    var.collector_layer_arn,
+    // var.collector_layer_arn,
+    "arn:aws:lambda:eu-west-1:901920570463:layer:aws-otel-nodejs-ver-1-0-0:1",
     var.sdk_layer_arn
   ])
 
@@ -23,7 +30,7 @@ module "hello-lambda-function" {
     OTEL_TRACES_EXPORTER        = "logging"
     OTEL_METRICS_EXPORTER       = "logging"
     OTEL_LOG_LEVEL              = "DEBUG"
-    OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:55681/v1/traces"
+    // OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:55681/v1/traces"
   }
 
   tracing_mode = var.tracing_mode

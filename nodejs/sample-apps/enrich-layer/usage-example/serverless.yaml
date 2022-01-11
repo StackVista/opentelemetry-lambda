@@ -1,0 +1,125 @@
+project:
+  name: otel
+  type: nodejs-example
+
+service: ${self:project.name}-${self:project.type}
+
+plugins:
+  - serverless-step-functions
+provider:
+  name: aws
+  profile: ${self:service}-${self:provider.stage}
+  stage: ${env:STAGE, 'dev'}
+  region: ${env:AWS_REGION, 'eu-west-1'}
+  stackName: ${self:service}-${self:provider.stage}
+  lambdaHashingVersion: 20201221
+  runtime: nodejs14.x
+  tracing:
+    lambda: PassThrough
+  memorySize: 384
+  timeout: 20
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+        - sns:Publish
+        - s3:PutObject
+        - s3:DeleteObject
+        - s3:PutBucketPolicy
+        - lambda:InvokeFunction
+        - states:StartExecution
+      Resource: "*"
+
+  environment:
+    # Open Telemetry
+    OTEL_LOG_LEVEL: info
+    OTEL_TRACES_EXPORTER: otlp
+    OTEL_PROPAGATORS: tracecontext
+    OTEL_TRACES_SAMPLER: always_on
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${env:OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}/open-telemetry
+
+    # Standard
+    AWS_REGION_DEPLOYED: ${self:provider.region}
+    AWS_ACCOUNT_ID:
+      Ref:
+        AWS::AccountId
+    RESOURCE_PREFIX: ${self:service}-${self:provider.stage}-
+    DEPLOYMENT_ENV: ${self:provider.stage}
+    SERVICE: ${self:service}
+
+    # Resources
+    S3_BUCKET_NAME:
+      Fn::Join:
+        - "-"
+        - - "${self:service}"
+          - "s3"
+          - "otel"
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
+
+    SNS_TOPIC_NAME:
+      Fn::Join:
+        - "-"
+        - - "${self:service}"
+          - "sns"
+          - "otel"
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
+
+    SQS_QUEUE_NAME:
+      Fn::Join:
+        - "-"
+        - - "${self:service}"
+          - "sqs"
+          - "otel"
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
+
+    STATE_MACHINE_NAME: "${self:service}-otel-state-machine"
+
+resources:
+  Resources:
+    SNS:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:provider.environment.SNS_TOPIC_NAME}
+
+    SQS:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:provider.environment.SQS_QUEUE_NAME}
+
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.S3_BUCKET_NAME}
+
+functions:
+  ExampleOpenTelemetry:
+    handler: example.main
+    environment:
+      AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
+    layers:
+      - !ImportValue sls-otel-nodejs-collector-dev-OTELCollectorLambdaLayerQualifiedArn
+      - !ImportValue sls-otel-nodejs-dev-OTELNodeJSLambdaLayerQualifiedArn
+
+  ExampleReceiverOpenTelemetry:
+    handler: example.receiver
+
+stepFunctions:
+  stateMachines:
+    hellostepfunc1:
+      name: ${self:provider.environment.STATE_MACHINE_NAME}
+      definition:
+        Comment: "AWS Lambda Function"
+        StartAt: HelloWorld1
+        States:
+          HelloWorld1:
+            Type: Task
+            Resource:
+              Fn::GetAtt: [ExampleReceiverOpenTelemetry, Arn]
+            End: true
+      events:
+        - http:
+            path: gofunction
+            method: GET

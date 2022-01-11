@@ -1,0 +1,19 @@
+project:
+  name: otel
+  type: ${env:PULL_LAYER_TYPE}-collector
+
+service: ${self:project.name}-${self:project.type}
+
+provider:
+  name: aws
+  profile: ${self:service}-${self:provider.stage}
+  stage: ${env:STAGE, 'dev'}
+  region: ${env:AWS_REGION, 'eu-west-1'}
+  stackName: ${self:service}-${self:provider.stage}
+  runtime: ${env:RUNTIME}
+
+layers:
+  OTELCollector:
+    name: ${self:service}-layer
+    package:
+      artifact: layers/${env:PULL_LAYER_TYPE}/layer.zip

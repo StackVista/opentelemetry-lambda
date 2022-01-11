@@ -1,0 +1,30 @@
+project:
+  name: otel
+  type: nodejs
+
+service: ${self:project.name}-${self:project.type}
+
+provider:
+  name: aws
+  profile: ${self:service}-${self:provider.stage}
+  stage: ${env:STAGE, 'dev'}
+  region: ${env:AWS_REGION, 'eu-west-1'}
+  stackName: ${self:service}-${self:provider.stage}
+  runtime: nodejs14.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutBucketPolicy
+      Resource: "*"
+
+layers:
+  OTELNodeJS:
+    name: ${self:service}-layer
+    compatibleRuntimes:
+      - nodejs10.x
+      - nodejs12.x
+      - nodejs14.x
+    licenseInfo: Apache-2.0
+    package:
+      artifact: layer.zip
+    retain: false

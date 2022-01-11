@@ -1,0 +1,26 @@
+---
+version: '3'
+
+services:
+  stackstate-agent:
+    image: "docker.io/stackstate/stackstate-agent-2-test:${AGENT_BRANCH}"
+    privileged: true
+    ports:
+      - "8126:8126"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/proc/:/host/proc/:ro"
+      - "/sys/fs/cgroup/:/host/sys/fs/cgroup:ro"
+      - "/etc/passwd:/etc/passwd:ro"
+      - "/sys/kernel/debug:/sys/kernel/debug"
+      - "./:/etc/stackstate-agent/conf.d/aws_topology.d"
+    environment:
+      STS_API_KEY: "${STS_API_KEY}"
+      STS_STS_URL: "${STACKSTATE_ENDPOINT}"
+      STS_PROCESS_AGENT_URL: "${STACKSTATE_ENDPOINT}"
+      STS_APM_URL: "${STACKSTATE_ENDPOINT}"
+      STS_PROCESS_AGENT_ENABLED: "true"
+      STS_NETWORK_TRACING_ENABLED: "true"
+      STS_APM_ENABLED: "true"
+      HOST_PROC: "/host/proc"
+      HOST_SYS: "/host/sys"

@@ -1,4 +1,7 @@
-import { NodeTracerConfig, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import {
+  NodeTracerConfig,
+  NodeTracerProvider,
+} from '@opentelemetry/sdk-trace-node';
 import {
   BatchSpanProcessor,
   ConsoleSpanExporter,
@@ -13,45 +16,73 @@ import {
   processDetector,
 } from '@opentelemetry/resources';
 import { AwsInstrumentation } from '@opentelemetry/instrumentation-aws-sdk';
-import {
-  diag,
-  DiagConsoleLogger,
-  DiagLogLevel,
-} from "@opentelemetry/api";
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+// eslint-disable-next-line node/no-extraneous-import
 import { getEnv } from '@opentelemetry/core';
 
 // Use require statements for instrumentation to avoid having to have transitive dependencies on all the typescript
 // definitions.
-const { AwsLambdaInstrumentation } = require('@opentelemetry/instrumentation-aws-lambda');
+const {
+  AwsLambdaInstrumentation,
+} = require('@opentelemetry/instrumentation-aws-lambda');
 const { DnsInstrumentation } = require('@opentelemetry/instrumentation-dns');
-const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express');
-const { GraphQLInstrumentation } = require('@opentelemetry/instrumentation-graphql');
+const {
+  ExpressInstrumentation,
+} = require('@opentelemetry/instrumentation-express');
+const {
+  GraphQLInstrumentation,
+} = require('@opentelemetry/instrumentation-graphql');
 const { GrpcInstrumentation } = require('@opentelemetry/instrumentation-grpc');
 const { HapiInstrumentation } = require('@opentelemetry/instrumentation-hapi');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
-const { IORedisInstrumentation } = require('@opentelemetry/instrumentation-ioredis');
+const {
+  IORedisInstrumentation,
+} = require('@opentelemetry/instrumentation-ioredis');
 const { KoaInstrumentation } = require('@opentelemetry/instrumentation-koa');
-const { MongoDBInstrumentation } = require('@opentelemetry/instrumentation-mongodb');
-const { MySQLInstrumentation } = require('@opentelemetry/instrumentation-mysql');
+const {
+  MongoDBInstrumentation,
+} = require('@opentelemetry/instrumentation-mongodb');
+const {
+  MySQLInstrumentation,
+} = require('@opentelemetry/instrumentation-mysql');
 const { NetInstrumentation } = require('@opentelemetry/instrumentation-net');
 const { PgInstrumentation } = require('@opentelemetry/instrumentation-pg');
-const { RedisInstrumentation } = require('@opentelemetry/instrumentation-redis');
+const {
+  RedisInstrumentation,
+} = require('@opentelemetry/instrumentation-redis');
 import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-proto';
+import { extractRequestInformation } from './aws-instrumentation/common';
+import { awsEnrichOpenTelemetry } from './aws-instrumentation/modules';
+import { Span } from '@opentelemetry/api';
+import { AwsSdkRequestHookInformation } from '@opentelemetry/instrumentation-aws-sdk';
 
 declare global {
   // in case of downstream configuring span processors etc
-  function configureTracerProvider(tracerProvider: NodeTracerProvider): void
+  function configureTracerProvider(tracerProvider: NodeTracerProvider): void;
   function configureTracer(defaultConfig: NodeTracerConfig): NodeTracerConfig;
   function configureSdkRegistration(
     defaultSdkRegistration: SDKRegistrationConfig
   ): SDKRegistrationConfig;
 }
 
-console.log('Registering OpenTelemetry');
+console.log('Registering OpenTelemetry - Custom STS');
 
 const instrumentations = [
   new AwsInstrumentation({
     suppressInternalInstrumentation: true,
+    preRequestHook: (span: Span, request: AwsSdkRequestHookInformation) => {
+      const { service, action, inputs } = extractRequestInformation(request);
+      // We attempt to enrich the AWS SDK data with some of the request information passed down
+      // We do not pass down generically as the requests object may contain sensitive information
+      // If the service is known then we attempt to map the known information if not then we attempt to apply a generic
+      // version
+      if (service && action && awsEnrichOpenTelemetry[service]) {
+        awsEnrichOpenTelemetry[service](service, span, action, inputs);
+      } else {
+        // Attempt to find generic information
+        awsEnrichOpenTelemetry['genericService'](service, span, action, inputs);
+      }
+    },
   }),
   new AwsLambdaInstrumentation(),
   new DnsInstrumentation(),
@@ -70,8 +101,8 @@ const instrumentations = [
 ];
 
 // configure lambda logging
-const logLevel = getEnv().OTEL_LOG_LEVEL
-diag.setLogger(new DiagConsoleLogger(), logLevel)
+const logLevel = getEnv().OTEL_LOG_LEVEL;
+diag.setLogger(new DiagConsoleLogger(), logLevel);
 
 // Register instrumentations synchronously to ensure code is patched even before provider is ready.
 registerInstrumentations({
@@ -92,7 +123,7 @@ async function initializeProvider() {
 
   const tracerProvider = new NodeTracerProvider(config);
   if (typeof configureTracerProvider === 'function') {
-    configureTracerProvider(tracerProvider)
+    configureTracerProvider(tracerProvider);
   } else {
     // defaults
     tracerProvider.addSpanProcessor(
@@ -101,7 +132,9 @@ async function initializeProvider() {
   }
   // logging for debug
   if (logLevel === DiagLogLevel.DEBUG) {
-    tracerProvider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
+    tracerProvider.addSpanProcessor(
+      new SimpleSpanProcessor(new ConsoleSpanExporter())
+    );
   }
 
   let sdkRegistrationConfig: SDKRegistrationConfig = {};

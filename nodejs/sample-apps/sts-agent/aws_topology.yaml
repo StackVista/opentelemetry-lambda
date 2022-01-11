@@ -1,0 +1,11 @@
+init_config:
+  aws_access_key_id: ''
+  aws_secret_access_key: ''
+  external_id: ''
+
+instances:
+  - role_arn: arn:aws:iam::<ACCOUNT_ID>:role/StackStateAwsIntegrationRole
+    regions:
+      - "global"
+      - "eu-west-1"
+    min_collection_interval: 60

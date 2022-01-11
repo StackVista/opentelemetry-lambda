@@ -1,0 +1,17 @@
+{
+  "name": "sample-serverless",
+  "version": "1.0.0",
+  "description": "## Introduction",
+  "main": "example.js",
+  "scripts": {
+    "test": ""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless": "^2.70.0"
+  },
+  "dependencies": {
+    "axios": "^0.24.0"
+  }
+}

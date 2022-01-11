@@ -11,3 +11,20 @@ terraform.*
 .vscode/
 
 .DS_Store
+
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+nodejs/sample-serverless/.env
+
+.envrc
+.env
+otel-agent.docker
+
+# Ignore dynamic official layers
+collector/official-layers/layers/*/layer.zip
+collector/official-layers/layers/*/layer
